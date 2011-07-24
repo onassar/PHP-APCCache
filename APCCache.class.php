@@ -1,15 +1,17 @@
 <?php
 
     /**
-     * Abstract APCCache class.
+     * Abstract APCCache class. Provides accessors for reading, writing and
+     *     flushing an apc-level cache/data-store.
      * 
+     * @todo implement prefixing
      * @note handles false-value caching through json_encode-ing
      * @abstract
      */
     abstract class APCCache
     {
         /**
-         * _misses. Number of failed APC key hits/APC key read failures.
+         * _misses. Number of failed apc-level cache reads/hits.
          * 
          * (default value: 0)
          * 
@@ -20,7 +22,7 @@
         protected static $_misses = 0;
 
         /**
-         * _reads. Number of successful APC key reads/successful hits
+         * _reads. Number of successful apc-level cache reads/hits.
          * 
          * (default value: 0)
          * 
@@ -31,7 +33,7 @@
         protected static $_reads = 0;
 
         /**
-         * _writes. Number of APC key/value sets/writes.
+         * _writes. Number of apc-level cache writes/sets.
          * 
          * (default value: 0)
          * 
@@ -42,9 +44,8 @@
         protected static $_writes = 0;
 
         /**
-         * flush function. Empties the server's APC 'user' and 'system' caches
-         *     ('user' being data/value set; 'system' being cached
-         *     files/bytecode/opcode).
+         * flush function. Empties apc-level cache records and bytecode/opcode
+         *     stores.
          * 
          * @access public
          * @static
@@ -64,8 +65,8 @@
         }
 
         /**
-         * getMisses function. Returns the number of times a request was made to
-         *     APC with a key, which couldn't be found/was missed.
+         * getMisses function. Returns the number of apc-level missed cache
+         *     reads.
          * 
          * @access public
          * @static
@@ -77,8 +78,8 @@
         }
 
         /**
-         * getReads function. Returns the number of times a value was
-         *     successfully read from APC.
+         * getReads function. Returns the number of apc-level successful cache
+         *     reads.
          * 
          * @access public
          * @static
@@ -90,8 +91,8 @@
         }
 
         /**
-         * getStats function. Returns an associative array of statistics for the
-         *     current request's APC usage.
+         * getStats function. Returns an associative array of apc-level cache
+         *     performance statistics.
          * 
          * @access public
          * @static
@@ -100,14 +101,15 @@
         public static function getStats()
         {
             return array(
-                'reads' => self::$_reads,
                 'misses' => self::$_misses,
+                'reads' => self::$_reads,
                 'writes' => self::$_writes
             );
         }
 
         /**
-         * getWrites function. Returns the number of successful write's to APC
+         * getWrites function. Returns the number of successful apc-level cache
+         *     writes.
          * 
          * @access public
          * @static
@@ -119,9 +121,9 @@
         }
 
         /**
-         * read function. Tries to read a value from the APC cache based on the
-         *     passed in key. Handles false/null return value logic changes.
-         * 
+         * read function. Attempts to read an apc-level cache record, returning
+         *     null if it couldn't be accessed. Handles false/null return value
+         *     logic.
          * @access public
          * @static
          * @param string $key key for the cache position
@@ -159,8 +161,8 @@
         }
 
         /**
-         * write function. Write's a value to APC cache based on the passed in
-         *     key. Handles false/null value storage logic changes.
+         * write function. Writes a value to the apc-level cache, based on the
+         *     passed in key. Handles false/null value storage logic.
          * 
          * @access public
          * @static
@@ -168,8 +170,8 @@
          * @param mixed $value value for the cache key, which cannot be an
          *     object or object reference
          * @param int $ttl. (default: 0) time to live (ttl) for the cache value,
-         *     after which it won't be accessible in the mapping (in seconds)
-         * @return bool whether or not the apc_store call was successful
+         *     after which it won't be accessible in the store (in seconds)
+         * @return void
          */
         public static function write($key, $value, $ttl = 0)
         {
@@ -195,12 +197,11 @@
 
             // safely attempt to write to APC store
             try {
-                // attempt to store
-                if (apc_store($key, $value, $ttl) === false) {
-                    return false;
-                }
+                // write to store
+                apc_store($key, $value, $ttl);
+
+                // increment statistic (after store call to allow for exception)
                 ++self::$_writes;
-                return true;
             } catch(Exception $exception) {
                 throw new Exception(
                     'APCCache Error: Exception while attempting to write to' .
