@@ -1,47 +1,46 @@
 <?php
 
+    // apc dependecy checks
+    if (!in_array('apc', get_loaded_extensions())) {
+        throw new Exception('APC extension needs to be installed.');
+    }
+
+    // json dependecy checks
+    if (!in_array('json', get_loaded_extensions())) {
+        throw new Exception('JSON extension needs to be installed.');
+    }
+
     /**
-     * Abstract APCCache class. Provides accessors for reading, writing and
-     *     flushing an apc-level cache/data-store.
+     * APCCache
      * 
-     * @todo implement prefixing
-     * @note handles false-value caching through json_encode-ing
+     * Provides accessors for reading, writing and flushing an apc-level
+     * cache/data-store.
+     * 
+     * @author   Oliver Nassar <onassar@gmail.com>
      * @abstract
+     * @notes    handles false-value caching through <json> encoding
+     * @todo     implement prefixing
+     * @example
+     * <code>
+     *     require_once APP . '/vendors/PHP-APCCache/APCCache.class.php';
+     *     APCCache::write('oliver', 'nassar');
+     *     echo APCCache::read('oliver');
+     *     exit(0);
+     * </code>
      */
     abstract class APCCache
     {
         /**
-         * _misses. Number of failed apc-level cache reads/hits.
+         * _analytics. APC cache request/writing statistics array.
          * 
-         * (default value: 0)
-         * 
-         * @var int
+         * @var array
          * @access protected
-         * @static
          */
-        protected static $_misses = 0;
-
-        /**
-         * _reads. Number of successful apc-level cache reads/hits.
-         * 
-         * (default value: 0)
-         * 
-         * @var int
-         * @access protected
-         * @static
-         */
-        protected static $_reads = 0;
-
-        /**
-         * _writes. Number of apc-level cache writes/sets.
-         * 
-         * (default value: 0)
-         * 
-         * @var int
-         * @access protected
-         * @static
-         */
-        protected static $_writes = 0;
+        protected static $_analytics = array(
+            'misses' => 0,
+            'reads' => 0,
+            'writes' => 0
+        );
 
         /**
          * flush function. Empties apc-level cache records and bytecode/opcode
@@ -74,7 +73,7 @@
          */
         public static function getMisses()
         {
-            return self::$_misses;
+            return self::$_analytics['misses'];
         }
 
         /**
@@ -87,7 +86,7 @@
          */
         public static function getReads()
         {
-            return self::$_reads;
+            return self::$_analytics['reads'];
         }
 
         /**
@@ -100,11 +99,7 @@
          */
         public static function getStats()
         {
-            return array(
-                'misses' => self::$_misses,
-                'reads' => self::$_reads,
-                'writes' => self::$_writes
-            );
+            return self::$_analytics;
         }
 
         /**
@@ -117,7 +112,7 @@
          */
         public static function getWrites()
         {
-            return self::$_writes;
+            return self::$_analytics['writes'];
         }
 
         /**
@@ -138,12 +133,12 @@
 
                 // not found
                 if ($response === false) {
-                    ++self::$_misses;
+                    ++self::$_analytics['misses'];
                     return null;
                 }
 
                 // increment apc-reads
-                ++self::$_reads;
+                ++self::$_analytics['reads'];
 
                 // falsy value, not `not-found` value
                 if ($response === json_encode(false)) {
@@ -201,7 +196,7 @@
                 apc_store($key, $value, $ttl);
 
                 // increment statistic (after store call to allow for exception)
-                ++self::$_writes;
+                ++self::$_analytics['writes'];
             } catch(Exception $exception) {
                 throw new Exception(
                     'APCCache Error: Exception while attempting to write to' .
@@ -210,5 +205,3 @@
             }
         }
     }
-
-?>
