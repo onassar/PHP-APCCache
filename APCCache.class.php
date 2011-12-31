@@ -22,7 +22,10 @@
      * @todo     implement prefixing
      * @example
      * <code>
+     *     // dependency
      *     require_once APP . '/vendors/PHP-APCCache/APCCache.class.php';
+     * 
+     *     // write to cache; read; exit script
      *     APCCache::write('oliver', 'nassar');
      *     echo APCCache::read('oliver');
      *     exit(0);
@@ -31,9 +34,11 @@
     abstract class APCCache
     {
         /**
-         * _analytics. APC cache request/writing statistics array.
+         * _analytics
          * 
-         * @var array
+         * APC cache request/writing statistics array.
+         * 
+         * @var    array
          * @access protected
          */
         protected static $_analytics = array(
@@ -43,8 +48,9 @@
         );
 
         /**
-         * flush function. Empties apc-level cache records and bytecode/opcode
-         *     stores.
+         * flush
+         * 
+         * Empties apc-level cache records and bytecode/opcode stores.
          * 
          * @access public
          * @static
@@ -64,12 +70,13 @@
         }
 
         /**
-         * getMisses function. Returns the number of apc-level missed cache
-         *     reads.
+         * getMisses
+         * 
+         * Returns the number of apc-level missed cache reads.
          * 
          * @access public
          * @static
-         * @return int number of read/fetch misses for APC requests
+         * @return integer number of read/fetch misses for APC requests
          */
         public static function getMisses()
         {
@@ -77,12 +84,13 @@
         }
 
         /**
-         * getReads function. Returns the number of apc-level successful cache
-         *     reads.
+         * getReads
+         * 
+         * Returns the number of apc-level successful cache reads.
          * 
          * @access public
          * @static
-         * @return int number of read/fetch requests for APC
+         * @return integer number of read/fetch requests for APC
          */
         public static function getReads()
         {
@@ -90,8 +98,10 @@
         }
 
         /**
-         * getStats function. Returns an associative array of apc-level cache
-         *     performance statistics.
+         * getStats
+         * 
+         * Returns an associative array of apc-level cache performance
+         * statistics.
          * 
          * @access public
          * @static
@@ -103,12 +113,13 @@
         }
 
         /**
-         * getWrites function. Returns the number of successful apc-level cache
-         *     writes.
+         * getWrites
+         * 
+         * Returns the number of successful apc-level cache writes.
          * 
          * @access public
          * @static
-         * @return int number of times a mixed value was written to APC
+         * @return integer number of times a mixed value was written to APC
          */
         public static function getWrites()
         {
@@ -116,12 +127,14 @@
         }
 
         /**
-         * read function. Attempts to read an apc-level cache record, returning
-         *     null if it couldn't be accessed. Handles false/null return value
-         *     logic.
+         * read
+         * 
+         * Attempts to read an apc-level cache record, returning null if it
+         * couldn't be accessed. Handles false/null return value logic.
+         * 
          * @access public
          * @static
-         * @param string $key key for the cache position
+         * @param  string $key key for the cache position
          * @return mixed cache record value, or else null if it's not present
          */
         public static function read($key)
@@ -156,16 +169,19 @@
         }
 
         /**
-         * write function. Writes a value to the apc-level cache, based on the
-         *     passed in key. Handles false/null value storage logic.
+         * write
+         * 
+         * Writes a value to the apc-level cache, based on the passed in key.
+         * Handles false/null value storage logic.
          * 
          * @access public
          * @static
-         * @param string $key key for the cache value in the hash
-         * @param mixed $value value for the cache key, which cannot be an
-         *     object or object reference
-         * @param int $ttl. (default: 0) time to live (ttl) for the cache value,
-         *     after which it won't be accessible in the store (in seconds)
+         * @param  string $key key for the cache value in the hash
+         * @param  mixed $value value for the cache key, which cannot be an
+         *         object or object reference
+         * @param  integer $ttl. (default: 0) time to live (ttl) for the cache
+         *         value, after which it won't be accessible in the store (in
+         *         seconds)
          * @return void
          */
         public static function write($key, $value, $ttl = 0)
@@ -177,8 +193,8 @@
                     'value in key *' . ($key) . '*.');
             }
             /**
-             * 'false' string storage-attempt check, which conflicts with method
-             *     of storing boolean false-value
+             * <false> string storage-attempt check, which conflicts with method
+             * of storing boolean false-value
              */
             elseif ($value === 'false') {
                 throw new Exception(
