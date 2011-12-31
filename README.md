@@ -18,7 +18,7 @@ encode certain data values. This is a requirement due to APC&#039;s structure,
 and it&#039;s lacking of flags to determine if a read was successfully
 evaluated, regardless of the return value.
 
-## Write/Read Example
+### Write/Read Example
 
     // dependency
     require_once APP . '/vendors/PHP-APCCache/APCCache.class.php';
