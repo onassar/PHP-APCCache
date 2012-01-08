@@ -20,6 +20,9 @@ evaluated, regardless of the return value.
 
 ### Write/Read Example
 
+``` php
+<?php
+
     // dependency
     require_once APP . '/vendors/PHP-APCCache/APCCache.class.php';
     
@@ -27,6 +30,8 @@ evaluated, regardless of the return value.
     APCCache::write('oliver', 'nassar');
     echo APCCache::read('oliver');
     exit(0);
+
+```
 
 The above example simply writes to the APC data-store, reads from it, and exits
 the script. Nothing fancy, and super-straightforward.
