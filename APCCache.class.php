@@ -24,6 +24,7 @@
      * <code>
      *     // dependency
      *     require_once APP . '/vendors/PHP-APCCache/APCCache.class.php';
+     *     APCCache::init('namespace');
      * 
      *     // write to cache; read; exit script
      *     APCCache::write('oliver', 'nassar');
@@ -46,6 +47,41 @@
             'reads' => 0,
             'writes' => 0
         );
+
+        /**
+         * _namespace
+         * 
+         * @var    string
+         * @access protected
+         */
+        protected static $_namespace;
+
+        /**
+         * _clean
+         * 
+         * @access protected
+         * @static
+         * @param  string $str
+         * @return string
+         */
+        protected static function _clean($str)
+        {
+            $str = (self::$_namespace) . ($str);
+            return md5($str);
+        }
+
+        /**
+         * init
+         * 
+         * @access public
+         * @static
+         * @param  string $namespace
+         * @return void
+         */
+        public static function init($namespace)
+        {
+            self::$_namespace = $namespace;
+        }
 
         /**
          * flush
@@ -139,9 +175,15 @@
          */
         public static function read($key)
         {
+            // ensure namespace set
+            if (is_null(self::$_namespace)) {
+                throw new Exception('Namespace not set');
+            }
+
             // safely attempt to read from APC store
             try {
                 // check apc
+                $key = self::_clean($key);
                 $response = apc_fetch($key);
 
                 // not found
@@ -186,6 +228,11 @@
          */
         public static function write($key, $value, $ttl = 0)
         {
+            // ensure namespace set
+            if (is_null(self::$_namespace)) {
+                throw new Exception('Namespace not set');
+            }
+
             // null value storage-attempt check
             if ($value === null) {
                 throw new Exception(
@@ -209,7 +256,11 @@
             // safely attempt to write to APC store
             try {
                 // write to store
-                apc_store($key, $value, $ttl);
+                $key = self::_clean($key);
+                $response = apc_store($key, $value, $ttl);
+                if ($response === false) {
+                    throw new Exception('Error writing');
+                }
 
                 // increment statistic (after store call to allow for exception)
                 ++self::$_analytics['writes'];
