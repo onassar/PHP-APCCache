@@ -49,6 +49,14 @@
         );
 
         /**
+         * _bypass
+         * 
+         * @var    boolean
+         * @access protected
+         */
+        protected static $_bypass = false;
+
+        /**
          * _namespace
          * 
          * @var    string
@@ -68,6 +76,23 @@
         {
             $str = (self::$_namespace) . ($str);
             return md5($str);
+        }
+
+        /**
+         * checkForFlushing
+         * 
+         * @note   If you are using apc for session storage, this will clear
+         *         them!
+         * @access public
+         * @static
+         * @param  string $key
+         * @return void
+         */
+        public static function checkForFlushing($key)
+        {
+            if (isset($_GET[$key])) {
+                self::flush();
+            }
         }
 
         /**
@@ -182,6 +207,13 @@
 
             // safely attempt to read from APC store
             try {
+
+                // Bypassing checking
+                if (self::$_bypass === true) {
+                    ++self::$_analytics['misses'];
+                    return null;
+                }
+
                 // check apc
                 $key = self::_clean($key);
                 $response = apc_fetch($key);
@@ -207,6 +239,22 @@
                     'APCache Error: Exception while attempting to read from ' .
                     'store.'
                 );
+            }
+        }
+
+        /**
+         * setupBypassing
+         * 
+         * @access public
+         * @static
+         * @param  string $key The key, which if found in _GET, will turn
+         *         caching off
+         * @return void
+         */
+        public static function setupBypassing($key)
+        {
+            if (isset($_GET[$key])) {
+                self::$_bypass = true;
             }
         }
 
