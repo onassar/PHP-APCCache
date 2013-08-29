@@ -43,6 +43,7 @@
          * @access protected
          */
         protected static $_analytics = array(
+            'deletes' => 0,
             'misses' => 0,
             'reads' => 0,
             'writes' => 0
@@ -96,6 +97,41 @@
         }
 
         /**
+         * delete
+         * 
+         * @access public
+         * @static
+         * @param  string $key
+         * @return void
+         */
+        public static function delete($key)
+        {
+            // ensure namespace set
+            if (is_null(self::$_namespace)) {
+                throw new Exception('Namespace not set');
+            }
+
+            // safely attempt to delete from APC store
+            try {
+
+                // delete from store
+                $key = self::_clean($key);
+                $response = apc_delete($key);
+                if ($response === false) {
+                    throw new Exception('Error deleting');
+                }
+
+                // increment statistic (after store call to allow for exception)
+                ++self::$_analytics['deletes'];
+            } catch(Exception $exception) {
+                throw new Exception(
+                    'APCCache Error: Exception while attempting to delete ' .
+                    'from store.'
+                );
+            }
+        }
+
+        /**
          * init
          * 
          * @access public
@@ -128,6 +164,18 @@
                     'APCCache Error: Exception while attempting to flush store.'
                 );
             }
+        }
+
+        /**
+         * getDeletes
+         * 
+         * @access public
+         * @static
+         * @return integer
+         */
+        public static function getDeletes()
+        {
+            return self::$_analytics['deletes'];
         }
 
         /**
