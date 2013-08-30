@@ -102,9 +102,10 @@
          * @access public
          * @static
          * @param  string $key
+         * @param  boolean $throwException (false)
          * @return void
          */
-        public static function delete($key)
+        public static function delete($key, $throwException = false)
         {
             // ensure namespace set
             if (is_null(self::$_namespace)) {
@@ -124,10 +125,12 @@
                 // increment statistic (after store call to allow for exception)
                 ++self::$_analytics['deletes'];
             } catch(Exception $exception) {
-                throw new Exception(
-                    'APCCache Error: Exception while attempting to delete ' .
-                    'from store.'
-                );
+                if ($throwException === true) {
+                    throw new Exception(
+                        'APCCache Error: Exception while attempting to delete ' .
+                        'from store.'
+                    );
+                }
             }
         }
 
